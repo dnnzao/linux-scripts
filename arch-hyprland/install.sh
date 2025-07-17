@@ -14,6 +14,8 @@ USERNAME="deniojr"
 TIMEZONE="America/Sao_Paulo"
 LOCALE="en_US.UTF-8"
 KEYMAP="us"
+ROOT_PASSWORD="Denio1991@Rafael1998!"
+USER_PASSWORD="Denio1991@Rafael1998!"
 
 # Colors and logging
 RED='\033[0;31m'
@@ -313,14 +315,12 @@ SERVICE_EOF
 main() {
     section "Arch Linux Base Installation Script"
     log "Installing for Dênio Barbosa Júnior (penn/deniojr)"
+    log "Using automated password configuration"
     
     # Check if running as root
     if [[ $EUID -ne 0 ]]; then
         error "This script must be run as root (from Arch ISO)"
     fi
-    
-    # Get passwords securely
-    get_passwords
     
     # Pre-installation
     check_boot_mode
