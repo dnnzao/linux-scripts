@@ -14,8 +14,6 @@ USERNAME="deniojr"
 TIMEZONE="America/Sao_Paulo"
 LOCALE="en_US.UTF-8"
 KEYMAP="us"
-ROOT_PASSWORD="Denio1991@Rafael1998!"
-USER_PASSWORD="Denio1991@Rafael1998!"
 
 # Colors and logging
 RED='\033[0;31m'
@@ -31,29 +29,51 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 section() { echo -e "\n${PURPLE}[SECTION]${NC} $1\n"; }
 
 #===============================================================================
-# Password input function
+# Password input function with retry logic
 #===============================================================================
 
 get_passwords() {
     section "Setting up user passwords..."
     
-    echo -n "Enter password for root user: "
-    read -s ROOT_PASSWORD
-    echo
+    # Get root password with retry
+    while true; do
+        echo -n "Enter password for root user (visible): "
+        read ROOT_PASSWORD
+        echo
+        
+        echo -n "Confirm password for root user (visible): "
+        read ROOT_PASSWORD_CONFIRM
+        echo
+        
+        if [[ "$ROOT_PASSWORD" == "$ROOT_PASSWORD_CONFIRM" ]]; then
+            log "Root passwords match!"
+            break
+        else
+            warn "Root passwords do not match! Please try again."
+            echo
+        fi
+    done
     
-    echo -n "Enter password for user '$USERNAME': "
-    read -s USER_PASSWORD
-    echo
+    # Get user password with retry
+    while true; do
+        echo -n "Enter password for user '$USERNAME' (visible): "
+        read USER_PASSWORD
+        echo
+        
+        echo -n "Confirm password for user '$USERNAME' (visible): "
+        read USER_PASSWORD_CONFIRM
+        echo
+        
+        if [[ "$USER_PASSWORD" == "$USER_PASSWORD_CONFIRM" ]]; then
+            log "User passwords match!"
+            break
+        else
+            warn "User passwords do not match! Please try again."
+            echo
+        fi
+    done
     
-    echo -n "Confirm password for user '$USERNAME': "
-    read -s USER_PASSWORD_CONFIRM
-    echo
-    
-    if [[ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]]; then
-        error "Passwords do not match!"
-    fi
-    
-    log "Passwords configured"
+    log "All passwords configured successfully"
 }
 
 #===============================================================================
@@ -315,12 +335,14 @@ SERVICE_EOF
 main() {
     section "Arch Linux Base Installation Script"
     log "Installing for Dênio Barbosa Júnior (penn/deniojr)"
-    log "Using automated password configuration"
     
     # Check if running as root
     if [[ $EUID -ne 0 ]]; then
         error "This script must be run as root (from Arch ISO)"
     fi
+    
+    # Get passwords securely with retry logic
+    get_passwords
     
     # Pre-installation
     check_boot_mode
