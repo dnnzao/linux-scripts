@@ -5,7 +5,8 @@
 # Description: Installs Hyprland, applications, and configurations
 #===============================================================================
 
-set -e
+# Remove set -e to allow graceful error handling
+# set -e
 
 # Colors and logging
 RED='\033[0;31m'
@@ -17,7 +18,7 @@ NC='\033[0m'
 
 log() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+error() { echo -e "${RED}[ERROR]${NC} $1"; }
 section() { echo -e "\n${PURPLE}[SECTION]${NC} $1\n"; }
 
 # Create log file
@@ -54,77 +55,82 @@ fi
 
 # Install balanced packages (functionality + rice-ability)
 section "Installing essential packages..."
-sudo pacman -S --needed --noconfirm \
-    bluez bluez-utils \
-    xdg-desktop-portal-hyprland \
-    polkit-gnome \
-    qt5-wayland qt6-wayland \
-    grim slurp swappy \
-    wl-clipboard \
-    brightnessctl playerctl \
-    thunar thunar-archive-plugin \
-    firefox chromium \
-    vlc mpv \
-    neofetch htop btop \
-    unzip p7zip ark \
-    noto-fonts noto-fonts-emoji \
-    ttf-jetbrains-mono-nerd ttf-fira-code \
-    papirus-icon-theme arc-gtk-theme \
-    lxappearance qt5ct \
-    starship \
-    pavucontrol
+sudo pacman -S --needed --noconfirm bluez bluez-utils || warn "Failed to install bluetooth packages"
+sudo pacman -S --needed --noconfirm xdg-desktop-portal-hyprland || warn "Failed to install xdg-desktop-portal-hyprland"
+sudo pacman -S --needed --noconfirm polkit-gnome || warn "Failed to install polkit-gnome"
+sudo pacman -S --needed --noconfirm qt5-wayland qt6-wayland || warn "Failed to install Qt Wayland packages"
+sudo pacman -S --needed --noconfirm grim slurp swappy || warn "Failed to install screenshot tools"
+sudo pacman -S --needed --noconfirm wl-clipboard || warn "Failed to install wl-clipboard"
+sudo pacman -S --needed --noconfirm brightnessctl playerctl || warn "Failed to install brightness/media controls"
+sudo pacman -S --needed --noconfirm thunar thunar-archive-plugin || warn "Failed to install file manager"
+sudo pacman -S --needed --noconfirm firefox chromium || warn "Failed to install browsers"
+sudo pacman -S --needed --noconfirm vlc mpv || warn "Failed to install media players"
+sudo pacman -S --needed --noconfirm fastfetch htop btop || warn "Failed to install system info tools"
+sudo pacman -S --needed --noconfirm unzip p7zip ark || warn "Failed to install archive tools"
+sudo pacman -S --needed --noconfirm noto-fonts noto-fonts-emoji || warn "Failed to install fonts"
+sudo pacman -S --needed --noconfirm ttf-jetbrains-mono-nerd ttf-fira-code || warn "Failed to install coding fonts"
+sudo pacman -S --needed --noconfirm starship || warn "Failed to install starship prompt"
+sudo pacman -S --needed --noconfirm pavucontrol || warn "Failed to install audio control"
+
+# Try to install theme packages with fallback
+log "Installing theme packages..."
+sudo pacman -S --needed --noconfirm papirus-icon-theme || warn "Papirus icon theme not available"
+sudo pacman -S --needed --noconfirm arc-theme || warn "Arc theme not available" 
+sudo pacman -S --needed --noconfirm lxappearance qt5ct || warn "Theme tools not available"
 
 # Install development tools for Dênio Barbosa Júnior
 section "Installing development tools..."
-sudo pacman -S --needed --noconfirm \
-    go rust python python-pip \
-    postgresql postgresql-contrib \
-    docker docker-compose \
-    neovim vim \
-    code
+sudo pacman -S --needed --noconfirm go || warn "Failed to install Go"
+sudo pacman -S --needed --noconfirm rust || warn "Failed to install Rust"
+sudo pacman -S --needed --noconfirm python python-pip || warn "Failed to install Python"
+sudo pacman -S --needed --noconfirm postgresql postgresql-contrib || warn "Failed to install PostgreSQL"
+sudo pacman -S --needed --noconfirm docker docker-compose || warn "Failed to install Docker"
+sudo pacman -S --needed --noconfirm neovim vim || warn "Failed to install editors"
+sudo pacman -S --needed --noconfirm code || warn "Failed to install VS Code"
 
-# Install balanced Hyprland ecosystem (rice-able + functional)
+# Install balanced Hyprland ecosystem (rice-able + functional) with error handling
 section "Installing Hyprland ecosystem..."
-paru -S --needed --noconfirm \
-    hyprland-git \
-    hyprpaper-git \
-    hyprlock-git \
-    hypridle-git \
-    waybar-hyprland-git \
-    eww-wayland \
-    rofi-wayland wofi \
-    swww \
-    dunst mako \
-    wlogout \
-    kitty alacritty wezterm \
-    cava \
-    fastfetch \
-    btop-git
+paru -S --needed --noconfirm hyprland-git || warn "Failed to install hyprland-git"
+paru -S --needed --noconfirm hyprpaper-git || warn "Failed to install hyprpaper-git"
+paru -S --needed --noconfirm hyprlock-git || warn "Failed to install hyprlock-git"
+paru -S --needed --noconfirm hypridle-git || warn "Failed to install hypridle-git"
+paru -S --needed --noconfirm waybar-hyprland-git || warn "Failed to install waybar-hyprland-git"
+paru -S --needed --noconfirm eww-wayland || warn "Failed to install eww-wayland"
+paru -S --needed --noconfirm rofi-wayland || warn "Failed to install rofi-wayland"
+paru -S --needed --noconfirm wofi || warn "Failed to install wofi"
+paru -S --needed --noconfirm swww || warn "Failed to install swww"
+paru -S --needed --noconfirm dunst || warn "Failed to install dunst"
+paru -S --needed --noconfirm mako || warn "Failed to install mako"
+paru -S --needed --noconfirm wlogout || warn "Failed to install wlogout"
+paru -S --needed --noconfirm kitty || warn "Failed to install kitty"
+paru -S --needed --noconfirm alacritty || warn "Failed to install alacritty"
+paru -S --needed --noconfirm wezterm || warn "Failed to install wezterm"
+paru -S --needed --noconfirm cava || warn "Failed to install cava"
 
-# Install gaming tools
+# Install gaming tools with error handling
 section "Installing gaming tools..."
-sudo pacman -S --needed --noconfirm \
-    steam \
-    wine wine-gecko wine-mono \
-    lutris \
-    gamemode lib32-gamemode
+sudo pacman -S --needed --noconfirm steam || warn "Failed to install steam"
+sudo pacman -S --needed --noconfirm wine || warn "Failed to install wine"
+sudo pacman -S --needed --noconfirm wine-gecko || warn "Failed to install wine-gecko"
+sudo pacman -S --needed --noconfirm wine-mono || warn "Failed to install wine-mono"
+sudo pacman -S --needed --noconfirm lutris || warn "Failed to install lutris"
+sudo pacman -S --needed --noconfirm gamemode || warn "Failed to install gamemode"
+sudo pacman -S --needed --noconfirm lib32-gamemode || warn "Failed to install lib32-gamemode"
 
-paru -S --needed --noconfirm \
-    wine-ge-custom \
-    heroic-games-launcher-bin
+paru -S --needed --noconfirm wine-ge-custom || warn "Failed to install wine-ge-custom"
+paru -S --needed --noconfirm heroic-games-launcher-bin || warn "Failed to install heroic-games-launcher"
 
-# Install GUI applications for Dênio Barbosa Júnior
+# Install GUI applications for Dênio Barbosa Júnior with error handling
 section "Installing GUI applications..."
-paru -S --needed --noconfirm \
-    discord \
-    notion-app-enhanced \
-    visual-studio-code-bin \
-    cursor-bin \
-    brave-bin \
-    google-chrome \
-    sublime-text-4 \
-    spotify \
-    obs-studio
+paru -S --needed --noconfirm discord || warn "Failed to install discord"
+paru -S --needed --noconfirm notion-app-enhanced || warn "Failed to install notion-app-enhanced"
+paru -S --needed --noconfirm visual-studio-code-bin || warn "Failed to install visual-studio-code-bin"
+paru -S --needed --noconfirm cursor-bin || warn "Failed to install cursor-bin"
+paru -S --needed --noconfirm brave-bin || warn "Failed to install brave-bin"
+paru -S --needed --noconfirm google-chrome || warn "Failed to install google-chrome"
+paru -S --needed --noconfirm sublime-text-4 || warn "Failed to install sublime-text-4"
+paru -S --needed --noconfirm spotify || warn "Failed to install spotify"
+paru -S --needed --noconfirm obs-studio || warn "Failed to install obs-studio"
 
 # Enable services with error handling
 section "Enabling services..."
