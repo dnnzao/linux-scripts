@@ -267,9 +267,12 @@ cat > /etc/hosts << EOF
 127.0.1.1    $HOSTNAME.localdomain    $HOSTNAME
 EOF
 
-# Enable services
-systemctl enable NetworkManager
-systemctl enable bluetooth
+# Enable services with error handling
+echo "Enabling NetworkManager..."
+systemctl enable NetworkManager || echo "Warning: Failed to enable NetworkManager"
+
+echo "Attempting to enable Bluetooth (may fail in VM)..."
+systemctl enable bluetooth || echo "Warning: Bluetooth not available (normal in VM)"
 
 # Create user for Dênio Barbosa Júnior
 useradd -m -G wheel,audio,video,optical,storage -s /bin/zsh $USERNAME
@@ -279,6 +282,7 @@ echo "root:$ROOT_PASSWORD" | chpasswd
 # Configure sudo
 echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
 
+echo "System configuration completed successfully"
 CHROOT_EOF
 
     chmod +x /mnt/configure_system.sh

@@ -126,20 +126,20 @@ paru -S --needed --noconfirm \
     spotify \
     obs-studio
 
-# Enable services
+# Enable services with error handling
 section "Enabling services..."
-sudo systemctl enable docker
-sudo systemctl enable postgresql
-sudo systemctl enable bluetooth
-sudo systemctl start bluetooth
+sudo systemctl enable docker || warn "Failed to enable docker"
+sudo systemctl enable postgresql || warn "Failed to enable postgresql" 
+sudo systemctl enable bluetooth || warn "Bluetooth not available (normal in VM)"
+sudo systemctl start bluetooth || warn "Could not start bluetooth (normal in VM)"
 
 # Add user to groups
 sudo usermod -aG docker,input,video $USER
 
-# Install display manager
+# Install display manager with error handling
 section "Installing display manager..."
-paru -S --needed --noconfirm greetd-tuigreet
-sudo systemctl enable greetd
+paru -S --needed --noconfirm greetd-tuigreet || warn "Failed to install greetd-tuigreet"
+sudo systemctl enable greetd || warn "Failed to enable greetd"
 
 # Create enhanced Hyprland config with theming support
 section "Creating Hyprland configuration..."
