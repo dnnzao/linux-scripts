@@ -212,8 +212,15 @@ mount_partitions() {
 install_base_system() {
     section "Installing base system..."
     
-    reflector --country BR --latest 20 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+    # Update mirrors with better configuration
+    log "Updating mirror list for better connectivity..."
+    reflector --verbose --latest 10 --protocol https --sort rate --country BR,US --save /etc/pacman.d/mirrorlist
     
+    # Update package databases
+    pacman -Sy
+    
+    # Install base system with fallback for lib32-mesa
+    log "Installing base packages..."
     pacstrap /mnt \
         base base-devel linux linux-firmware \
         networkmanager network-manager-applet \
@@ -221,9 +228,13 @@ install_base_system() {
         intel-ucode amd-ucode \
         grub efibootmgr os-prober \
         git vim nano sudo zsh \
-        mesa lib32-mesa vulkan-intel vulkan-radeon \
+        mesa vulkan-intel vulkan-radeon \
         pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
         curl wget
+    
+    # Try to install lib32-mesa separately (might not be available on all mirrors)
+    log "Attempting to install 32-bit graphics libraries..."
+    arch-chroot /mnt pacman -S --noconfirm lib32-mesa || warn "lib32-mesa not available, skipping..."
     
     genfstab -U /mnt >> /mnt/etc/fstab
     log "Base system installed successfully"
