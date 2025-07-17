@@ -520,6 +520,75 @@ WAYBAR_CSS
 
 log "Waybar configuration created"
 
+# Configure terminals with custom keybindings
+section "Configuring terminal keybindings..."
+
+# Kitty config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
+mkdir -p ~/.config/kitty
+cat > ~/.config/kitty/kitty.conf << 'KITTY_EOF'
+# Copy/paste with Ctrl+C/V
+map ctrl+c copy_to_clipboard
+map ctrl+v paste_from_clipboard
+
+# Process interrupt with Ctrl+Shift+C
+map ctrl+shift+c send_text all \x03
+
+# Font settings
+font_family JetBrainsMono Nerd Font
+font_size 12.0
+
+# Theme
+background_opacity 0.9
+KITTY_EOF
+
+# Alacritty config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
+mkdir -p ~/.config/alacritty
+cat > ~/.config/alacritty/alacritty.yml << 'ALACRITTY_EOF'
+font:
+  normal:
+    family: JetBrainsMono Nerd Font
+  size: 12.0
+
+window:
+  opacity: 0.9
+
+key_bindings:
+  # Copy/paste with Ctrl+C/V
+  - { key: C, mods: Control, action: Copy }
+  - { key: V, mods: Control, action: Paste }
+  
+  # Process interrupt with Ctrl+Shift+C
+  - { key: C, mods: Control|Shift, chars: "\x03" }
+ALACRITTY_EOF
+
+# Wezterm config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
+mkdir -p ~/.config/wezterm
+cat > ~/.config/wezterm/wezterm.lua << 'WEZTERM_EOF'
+local wezterm = require 'wezterm'
+local config = {}
+
+-- Font
+config.font = wezterm.font('JetBrainsMono Nerd Font')
+config.font_size = 12.0
+
+-- Appearance
+config.window_background_opacity = 0.9
+
+-- Key bindings
+config.keys = {
+  -- Copy/paste with Ctrl+C/V
+  { key = 'c', mods = 'CTRL', action = wezterm.action.CopyTo 'Clipboard' },
+  { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' },
+  
+  -- Process interrupt with Ctrl+Shift+C
+  { key = 'c', mods = 'CTRL|SHIFT', action = wezterm.action.SendKey { key = 'c', mods = 'CTRL' } },
+}
+
+return config
+WEZTERM_EOF
+
+log "Terminal configurations created with custom keybindings"
+
 # Set up shell environment
 section "Setting up shell environment..."
 if [[ ! -f ~/.zshrc ]]; then
