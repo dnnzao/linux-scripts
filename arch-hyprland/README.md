@@ -7,7 +7,7 @@ Complete automated installation script for Arch Linux with Hyprland Wayland comp
 Boot from Arch Linux ISO and run:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/arch-hyprland/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/dnnzao/linux-scripts/main/arch-hyprland/install.sh | bash
 ```
 
 ## 📋 What This Installs
@@ -17,7 +17,7 @@ curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/arch-hyprland/main/inst
 - **User**: deniojr (Dênio Barbosa Júnior)
 - **Timezone**: America/Sao_Paulo (-3 UTC)
 - **Keyboard**: US International (ç, à, è, ì, ò, ù support)
-- **Auto-passwords**: Configured automatically
+- **Passwords**: Prompted securely during installation
 
 ### Desktop Environment
 - **Hyprland** (latest git version)
@@ -41,7 +41,8 @@ curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/arch-hyprland/main/inst
 - **Utilities**: Thunar, Ark, Pavucontrol
 
 ### Features
-- ✅ **Fully automated** - No manual intervention required
+- ✅ **Fully automated** - Minimal manual intervention
+- ✅ **Secure password prompts** - No hardcoded credentials
 - ✅ **Auto-reboot** and post-installation setup
 - ✅ **Enhanced theming** ready for customization
 - ✅ **Multiple terminal options**
@@ -64,7 +65,7 @@ If you prefer to run scripts separately:
 ### 1. Base Installation
 ```bash
 # Boot from Arch ISO
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/arch-hyprland/main/install.sh -o install.sh
+curl -sL https://raw.githubusercontent.com/dnnzao/linux-scripts/main/arch-hyprland/install.sh -o install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -75,7 +76,25 @@ chmod +x install.sh
 ~/post_install.sh
 ```
 
-## ⚙️ Customization
+## 🔐 Security Features
+
+- **No hardcoded passwords** - All credentials prompted securely
+- **Sudo configuration** with wheel group
+- **User groups** properly configured
+- **Secure defaults** throughout installation
+
+## ⚙️ Installation Process
+
+1. **Password Setup**: You'll be prompted to enter:
+   - Root password
+   - User password (with confirmation)
+2. **Disk Selection**: Choose target installation disk
+3. **Automated Installation**: Base system installs automatically
+4. **Auto-reboot**: System reboots and continues setup
+5. **Hyprland Setup**: Desktop environment installs automatically
+6. **Final Reboot**: Ready to use system
+
+## 🎯 Customization
 
 ### Hyprland Configuration
 - Main config: `~/.config/hypr/hyprland.conf`
@@ -102,15 +121,8 @@ Perfect for testing before real installation:
 
 1. Create VM with 4GB+ RAM and 20GB+ disk
 2. Boot Arch Linux ISO
-3. Run the installation script
+3. Run the installation command
 4. Test all functionality
-
-## 🔒 Security Features
-
-- Firewall enabled (UFW)
-- Sudo configuration
-- User in appropriate groups
-- Secure defaults
 
 ## 🎯 Target Hardware
 
@@ -139,6 +151,13 @@ Installation logs available at:
 - Check logs for errors
 - Verify hardware compatibility
 - Ensure stable internet connection during installation
+
+## ⚠️ Important Notes
+
+- **Backup your data** before installation
+- This script will **completely wipe** the selected disk
+- Designed for **clean installations** only
+- Test in VM before using on real hardware
 
 ---
 

@@ -3,7 +3,7 @@
 # Arch Linux Base Installation Script
 # Author: Dênio Barbosa Júnior
 # Description: Automated Arch Linux base installation 
-# Usage: curl -sL https://raw.githubusercontent.com/USERNAME/arch-hyprland/main/install.sh | bash
+# Usage: curl -sL https://raw.githubusercontent.com/dnnzao/linux-scripts/main/arch-hyprland/install.sh | bash
 #===============================================================================
 
 set -euo pipefail
@@ -14,8 +14,6 @@ USERNAME="deniojr"
 TIMEZONE="America/Sao_Paulo"
 LOCALE="en_US.UTF-8"
 KEYMAP="us"
-ROOT_PASSWORD="dbj110891"
-USER_PASSWORD="dbj110891"
 
 # Colors and logging
 RED='\033[0;31m'
@@ -29,6 +27,32 @@ log() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 section() { echo -e "\n${PURPLE}[SECTION]${NC} $1\n"; }
+
+#===============================================================================
+# Password input function
+#===============================================================================
+
+get_passwords() {
+    section "Setting up user passwords..."
+    
+    echo "Enter password for root user:"
+    read -rs ROOT_PASSWORD
+    echo
+    
+    echo "Enter password for user '$USERNAME':"
+    read -rs USER_PASSWORD
+    echo
+    
+    echo "Confirm password for user '$USERNAME':"
+    read -rs USER_PASSWORD_CONFIRM
+    echo
+    
+    if [[ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]]; then
+        error "Passwords do not match!"
+    fi
+    
+    log "Passwords configured"
+}
 
 #===============================================================================
 # Pre-installation checks and setup
@@ -186,28 +210,28 @@ install_base_system() {
 configure_system() {
     section "Configuring base system..."
     
-    cat > /mnt/configure_system.sh << 'CHROOT_EOF'
+    cat > /mnt/configure_system.sh << CHROOT_EOF
 #!/bin/bash
 set -e
 
 # Set timezone
-ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 hwclock --systohc
 
 # Set locale
-echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+echo "$LOCALE UTF-8" >> /etc/locale.gen
 locale-gen
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "LANG=$LOCALE" > /etc/locale.conf
 
 # Set keymap
-echo "KEYMAP=us" > /etc/vconsole.conf
+echo "KEYMAP=$KEYMAP" > /etc/vconsole.conf
 
 # Set hostname
-echo "penn" > /etc/hostname
+echo "$HOSTNAME" > /etc/hostname
 cat > /etc/hosts << EOF
 127.0.0.1    localhost
 ::1          localhost
-127.0.1.1    penn.localdomain    penn
+127.0.1.1    $HOSTNAME.localdomain    $HOSTNAME
 EOF
 
 # Enable services
@@ -215,9 +239,9 @@ systemctl enable NetworkManager
 systemctl enable bluetooth
 
 # Create user for Dênio Barbosa Júnior
-useradd -m -G wheel,audio,video,optical,storage -s /bin/zsh deniojr
-echo "deniojr:dbj110891" | chpasswd
-echo "root:dbj110891" | chpasswd
+useradd -m -G wheel,audio,video,optical,storage -s /bin/zsh $USERNAME
+echo "$USERNAME:$USER_PASSWORD" | chpasswd
+echo "root:$ROOT_PASSWORD" | chpasswd
 
 # Configure sudo
 echo "%wheel ALL=(ALL:ALL) ALL" >> /etc/sudoers
@@ -249,10 +273,10 @@ install_bootloader() {
 setup_post_install() {
     section "Setting up post-installation script..."
     
-    # Download post_install.sh from GitHub
-    arch-chroot /mnt curl -sL https://raw.githubusercontent.com/dnnzao/linux-scripts/main/post_install.sh
-    arch-chroot /mnt chmod +x /home/deniojr/post_install.sh
-    arch-chroot /mnt chown deniojr:deniojr /home/deniojr/post_install.sh
+    # Download post_install.sh from GitHub (updated path)
+    arch-chroot /mnt curl -sL https://raw.githubusercontent.com/dnnzao/linux-scripts/main/arch-hyprland/post_install.sh -o /home/$USERNAME/post_install.sh
+    arch-chroot /mnt chmod +x /home/$USERNAME/post_install.sh
+    arch-chroot /mnt chown 1000:1000 /home/$USERNAME/post_install.sh
     
     # Create systemd service for auto post-install
     cat > /mnt/etc/systemd/system/arch-post-install.service << 'SERVICE_EOF'
@@ -294,6 +318,9 @@ main() {
     if [[ $EUID -ne 0 ]]; then
         error "This script must be run as root (from Arch ISO)"
     fi
+    
+    # Get passwords securely
+    get_passwords
     
     # Pre-installation
     check_boot_mode
