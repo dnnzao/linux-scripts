@@ -35,16 +35,16 @@ section() { echo -e "\n${PURPLE}[SECTION]${NC} $1\n"; }
 get_passwords() {
     section "Setting up user passwords..."
     
-    echo "Enter password for root user:"
-    read -rs ROOT_PASSWORD
+    echo -n "Enter password for root user: "
+    read -s ROOT_PASSWORD
     echo
     
-    echo "Enter password for user '$USERNAME':"
-    read -rs USER_PASSWORD
+    echo -n "Enter password for user '$USERNAME': "
+    read -s USER_PASSWORD
     echo
     
-    echo "Confirm password for user '$USERNAME':"
-    read -rs USER_PASSWORD_CONFIRM
+    echo -n "Confirm password for user '$USERNAME': "
+    read -s USER_PASSWORD_CONFIRM
     echo
     
     if [[ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]]; then
