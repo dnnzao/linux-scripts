@@ -1,6 +1,6 @@
 #!/bin/bash
 #===============================================================================
-# Arch Linux Post Installation - Hyprland Setup
+# Arch Linux Post Installation - Hyprland Setup (FIXED)
 # Author: Dênio Barbosa Júnior
 # Description: Installs Hyprland, applications, and configurations
 #===============================================================================
@@ -35,15 +35,17 @@ while ! ping -c 1 google.com &> /dev/null; do
 done
 log "Network connected"
 
-# Update system
-section "Updating system..."
+# Update system and fix keyrings
+section "Updating system and fixing package signatures..."
+sudo pacman -Sy archlinux-keyring --noconfirm
+sudo pacman-key --populate archlinux
 sudo pacman -Syu --noconfirm
 
 # Install paru AUR helper
 section "Installing paru AUR helper..."
 if ! command -v paru &> /dev/null; then
     cd /tmp
-    sudo pacman -S --needed --noconfirm git
+    sudo pacman -S --needed --noconfirm git base-devel
     git clone https://aur.archlinux.org/paru.git
     cd paru
     makepkg -si --noconfirm
@@ -53,86 +55,113 @@ else
     log "Paru already installed"
 fi
 
-# Install balanced packages (functionality + rice-ability)
-section "Installing essential packages..."
-sudo pacman -S --needed --noconfirm bluez bluez-utils || warn "Failed to install bluetooth packages"
-sudo pacman -S --needed --noconfirm xdg-desktop-portal-hyprland || warn "Failed to install xdg-desktop-portal-hyprland"
-sudo pacman -S --needed --noconfirm polkit-gnome || warn "Failed to install polkit-gnome"
-sudo pacman -S --needed --noconfirm qt5-wayland qt6-wayland || warn "Failed to install Qt Wayland packages"
-sudo pacman -S --needed --noconfirm grim slurp swappy || warn "Failed to install screenshot tools"
-sudo pacman -S --needed --noconfirm wl-clipboard || warn "Failed to install wl-clipboard"
-sudo pacman -S --needed --noconfirm brightnessctl playerctl || warn "Failed to install brightness/media controls"
-sudo pacman -S --needed --noconfirm thunar thunar-archive-plugin || warn "Failed to install file manager"
-sudo pacman -S --needed --noconfirm firefox chromium || warn "Failed to install browsers"
-sudo pacman -S --needed --noconfirm vlc mpv || warn "Failed to install media players"
-sudo pacman -S --needed --noconfirm fastfetch htop btop || warn "Failed to install system info tools"
-sudo pacman -S --needed --noconfirm unzip p7zip ark || warn "Failed to install archive tools"
-sudo pacman -S --needed --noconfirm noto-fonts noto-fonts-emoji || warn "Failed to install fonts"
-sudo pacman -S --needed --noconfirm ttf-jetbrains-mono-nerd ttf-fira-code || warn "Failed to install coding fonts"
-sudo pacman -S --needed --noconfirm starship || warn "Failed to install starship prompt"
-sudo pacman -S --needed --noconfirm pavucontrol || warn "Failed to install audio control"
+# Install essential Wayland and graphics packages first
+section "Installing essential Wayland and graphics packages..."
+sudo pacman -S --needed --noconfirm \
+    wayland wayland-protocols \
+    xorg-xwayland \
+    mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon \
+    vulkan-intel lib32-vulkan-intel \
+    libva-mesa-driver lib32-libva-mesa-driver \
+    mesa-vdpau lib32-mesa-vdpau
 
-# Try to install theme packages with fallback
+# Install core system packages
+section "Installing core system packages..."
+sudo pacman -S --needed --noconfirm \
+    bluez bluez-utils \
+    xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
+    polkit-gnome \
+    qt5-wayland qt6-wayland \
+    grim slurp swappy \
+    wl-clipboard \
+    brightnessctl playerctl \
+    pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
+    thunar thunar-archive-plugin \
+    firefox chromium \
+    vlc mpv \
+    fastfetch htop btop \
+    unzip p7zip ark \
+    noto-fonts noto-fonts-emoji \
+    ttf-jetbrains-mono-nerd ttf-fira-code \
+    starship \
+    pavucontrol
+
+# Install theme packages
 log "Installing theme packages..."
-sudo pacman -S --needed --noconfirm papirus-icon-theme || warn "Papirus icon theme not available"
-sudo pacman -S --needed --noconfirm arc-theme || warn "Arc theme not available" 
-sudo pacman -S --needed --noconfirm lxappearance qt5ct || warn "Theme tools not available"
+sudo pacman -S --needed --noconfirm papirus-icon-theme arc-theme lxappearance qt5ct || warn "Some theme packages not available"
 
-# Install development tools for Dênio Barbosa Júnior
+# Install development tools
 section "Installing development tools..."
-sudo pacman -S --needed --noconfirm go || warn "Failed to install Go"
-sudo pacman -S --needed --noconfirm rust || warn "Failed to install Rust"
-sudo pacman -S --needed --noconfirm python python-pip || warn "Failed to install Python"
-sudo pacman -S --needed --noconfirm postgresql postgresql-contrib || warn "Failed to install PostgreSQL"
-sudo pacman -S --needed --noconfirm docker docker-compose || warn "Failed to install Docker"
-sudo pacman -S --needed --noconfirm neovim vim || warn "Failed to install editors"
-sudo pacman -S --needed --noconfirm code || warn "Failed to install VS Code"
+sudo pacman -S --needed --noconfirm \
+    go rust python python-pip \
+    postgresql postgresql-contrib \
+    docker docker-compose \
+    neovim vim code || warn "Some development tools failed to install"
 
-# Install balanced Hyprland ecosystem (rice-able + functional) with error handling
+# Install Hyprland ecosystem with better error handling
 section "Installing Hyprland ecosystem..."
-paru -S --needed --noconfirm hyprland-git || warn "Failed to install hyprland-git"
-paru -S --needed --noconfirm hyprpaper-git || warn "Failed to install hyprpaper-git"
-paru -S --needed --noconfirm hyprlock-git || warn "Failed to install hyprlock-git"
-paru -S --needed --noconfirm hypridle-git || warn "Failed to install hypridle-git"
-paru -S --needed --noconfirm waybar-hyprland-git || warn "Failed to install waybar-hyprland-git"
-paru -S --needed --noconfirm eww-wayland || warn "Failed to install eww-wayland"
-paru -S --needed --noconfirm rofi-wayland || warn "Failed to install rofi-wayland"
-paru -S --needed --noconfirm wofi || warn "Failed to install wofi"
-paru -S --needed --noconfirm swww || warn "Failed to install swww"
-paru -S --needed --noconfirm dunst || warn "Failed to install dunst"
-paru -S --needed --noconfirm mako || warn "Failed to install mako"
-paru -S --needed --noconfirm wlogout || warn "Failed to install wlogout"
-paru -S --needed --noconfirm kitty || warn "Failed to install kitty"
-paru -S --needed --noconfirm alacritty || warn "Failed to install alacritty"
-paru -S --needed --noconfirm wezterm || warn "Failed to install wezterm"
-paru -S --needed --noconfirm cava || warn "Failed to install cava"
 
-# Install gaming tools with error handling
+# Install stable Hyprland first as fallback
+sudo pacman -S --needed --noconfirm hyprland || warn "Failed to install stable Hyprland"
+
+# Try to install git versions with paru
+paru -S --needed --noconfirm --skipreview hyprland-git || {
+    warn "Failed to install hyprland-git, using stable version"
+    sudo pacman -S --needed --noconfirm hyprland
+}
+
+# Install other Hyprland components
+paru -S --needed --noconfirm --skipreview \
+    hyprpaper \
+    hyprlock \
+    hypridle \
+    waybar \
+    rofi-wayland \
+    wofi \
+    swww \
+    dunst \
+    wlogout || warn "Some Hyprland components failed to install"
+
+# Install terminals
+sudo pacman -S --needed --noconfirm kitty alacritty || warn "Failed to install some terminals"
+paru -S --needed --noconfirm --skipreview wezterm || warn "Failed to install wezterm"
+
+# Install additional tools
+sudo pacman -S --needed --noconfirm cava || warn "Failed to install cava"
+
+# Install gaming tools
 section "Installing gaming tools..."
-sudo pacman -S --needed --noconfirm steam || warn "Failed to install steam"
-sudo pacman -S --needed --noconfirm wine || warn "Failed to install wine"
-sudo pacman -S --needed --noconfirm wine-gecko || warn "Failed to install wine-gecko"
-sudo pacman -S --needed --noconfirm wine-mono || warn "Failed to install wine-mono"
-sudo pacman -S --needed --noconfirm lutris || warn "Failed to install lutris"
-sudo pacman -S --needed --noconfirm gamemode || warn "Failed to install gamemode"
-sudo pacman -S --needed --noconfirm lib32-gamemode || warn "Failed to install lib32-gamemode"
+sudo pacman -S --needed --noconfirm \
+    steam wine wine-gecko wine-mono \
+    lutris gamemode lib32-gamemode || warn "Some gaming tools failed to install"
 
-paru -S --needed --noconfirm wine-ge-custom || warn "Failed to install wine-ge-custom"
-paru -S --needed --noconfirm heroic-games-launcher-bin || warn "Failed to install heroic-games-launcher"
+paru -S --needed --noconfirm --skipreview \
+    wine-ge-custom \
+    heroic-games-launcher-bin || warn "Some AUR gaming tools failed to install"
 
-# Install GUI applications for Dênio Barbosa Júnior with error handling
+# Install GUI applications
 section "Installing GUI applications..."
-paru -S --needed --noconfirm discord || warn "Failed to install discord"
-paru -S --needed --noconfirm notion-app-enhanced || warn "Failed to install notion-app-enhanced"
-paru -S --needed --noconfirm visual-studio-code-bin || warn "Failed to install visual-studio-code-bin"
-paru -S --needed --noconfirm cursor-bin || warn "Failed to install cursor-bin"
-paru -S --needed --noconfirm brave-bin || warn "Failed to install brave-bin"
-paru -S --needed --noconfirm google-chrome || warn "Failed to install google-chrome"
-paru -S --needed --noconfirm sublime-text-4 || warn "Failed to install sublime-text-4"
-paru -S --needed --noconfirm spotify || warn "Failed to install spotify"
-paru -S --needed --noconfirm obs-studio || warn "Failed to install obs-studio"
+paru -S --needed --noconfirm --skipreview \
+    discord \
+    visual-studio-code-bin \
+    brave-bin \
+    google-chrome \
+    spotify \
+    obs-studio || warn "Some GUI applications failed to install"
 
-# Enable services with error handling
+# Install display manager
+section "Installing display manager..."
+paru -S --needed --noconfirm --skipreview greetd-tuigreet || {
+    warn "Failed to install greetd-tuigreet, installing gdm as fallback"
+    sudo pacman -S --needed --noconfirm gdm
+    sudo systemctl enable gdm
+}
+
+if command -v greetd &> /dev/null; then
+    sudo systemctl enable greetd
+fi
+
+# Enable services
 section "Enabling services..."
 sudo systemctl enable docker || warn "Failed to enable docker"
 sudo systemctl enable postgresql || warn "Failed to enable postgresql" 
@@ -142,29 +171,30 @@ sudo systemctl start bluetooth || warn "Could not start bluetooth (normal in VM)
 # Add user to groups
 sudo usermod -aG docker,input,video $USER
 
-# Install display manager with error handling
-section "Installing display manager..."
-paru -S --needed --noconfirm greetd-tuigreet || warn "Failed to install greetd-tuigreet"
-sudo systemctl enable greetd || warn "Failed to enable greetd"
-
-# Create enhanced Hyprland config with theming support
+# Create enhanced Hyprland config
 section "Creating Hyprland configuration..."
 mkdir -p ~/.config/hypr
 cat > ~/.config/hypr/hyprland.conf << 'HYPR_EOF'
 # Monitor configuration
 monitor=,preferred,auto,1
 
-# Environment variables for theming
+# Environment variables
 env = XCURSOR_SIZE,24
 env = QT_QPA_PLATFORMTHEME,qt5ct
+env = XDG_CURRENT_DESKTOP,Hyprland
+env = XDG_SESSION_TYPE,wayland
+env = XDG_SESSION_DESKTOP,Hyprland
+env = WLR_NO_HARDWARE_CURSORS,1
+env = WLR_RENDERER_ALLOW_SOFTWARE,1
 
 # Autostart
 exec-once = waybar
 exec-once = dunst
-exec-once = swww init
+exec-once = swww init || swww-daemon
 exec-once = /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-# Input configuration for US International keyboard
+# Input configuration
 input {
     kb_layout = us
     kb_variant = intl
@@ -181,71 +211,50 @@ input {
     accel_profile = flat
 }
 
-# General settings (enhanced for ricing)
+# General settings
 general {
-    gaps_in = 8
-    gaps_out = 15
-    border_size = 3
-    col.active_border = rgba(7aa2f7ff) rgba(bb9af7ff) 45deg
+    gaps_in = 5
+    gaps_out = 10
+    border_size = 2
+    col.active_border = rgba(7aa2f7ff)
     col.inactive_border = rgba(414868aa)
     layout = dwindle
     allow_tearing = false
     resize_on_border = true
 }
 
-# Enhanced decoration for visual appeal
+# Decoration (reduced for VM)
 decoration {
-    rounding = 12
+    rounding = 8
     blur {
-        enabled = true
-        size = 6
-        passes = 3
-        new_optimizations = true
-        xray = true
-        ignore_opacity = true
+        enabled = false
+        size = 3
+        passes = 1
     }
-    drop_shadow = true
-    shadow_range = 20
-    shadow_render_power = 3
-    col.shadow = rgba(1a1a1aee)
-    shadow_offset = 0 2
-    
-    active_opacity = 0.95
-    inactive_opacity = 0.85
+    drop_shadow = false
+    active_opacity = 1.0
+    inactive_opacity = 0.9
     fullscreen_opacity = 1.0
 }
 
-# Smooth animations
+# Animations (reduced for VM)
 animations {
     enabled = true
-    bezier = wind, 0.05, 0.9, 0.1, 1.05
-    bezier = winIn, 0.1, 1.1, 0.1, 1.1
-    bezier = winOut, 0.3, -0.3, 0, 1
-    bezier = liner, 1, 1, 1, 1
-    
-    animation = windows, 1, 6, wind, slide
-    animation = windowsIn, 1, 6, winIn, slide
-    animation = windowsOut, 1, 5, winOut, slide
-    animation = windowsMove, 1, 5, wind, slide
-    animation = border, 1, 1, liner
-    animation = borderangle, 1, 30, liner, loop
-    animation = fade, 1, 10, default
-    animation = workspaces, 1, 5, wind
+    bezier = myBezier, 0.05, 0.9, 0.1, 1.05
+    animation = windows, 1, 4, myBezier
+    animation = windowsOut, 1, 4, default, popin 80%
+    animation = border, 1, 5, default
+    animation = fade, 1, 4, default
+    animation = workspaces, 1, 3, default
 }
 
 # Layout
 dwindle {
     pseudotile = true
     preserve_split = true
-    smart_split = true
-    smart_resizing = true
 }
 
-# Window rules for better theming
-windowrule = opacity 0.9,^(kitty)$
-windowrule = opacity 0.9,^(alacritty)$
-windowrule = opacity 0.95,^(code)$
-windowrule = opacity 0.95,^(firefox)$
+# Window rules
 windowrule = float,^(pavucontrol)$
 windowrule = float,^(lxappearance)$
 windowrule = float,^(qt5ct)$
@@ -256,41 +265,20 @@ $mainMod = SUPER
 # Application shortcuts
 bind = $mainMod, Return, exec, kitty
 bind = $mainMod SHIFT, Return, exec, alacritty
-bind = $mainMod ALT, Return, exec, wezterm
 bind = $mainMod, C, killactive,
 bind = $mainMod, M, exit,
 bind = $mainMod, E, exec, thunar
 bind = $mainMod, V, togglefloating,
-bind = $mainMod, R, exec, rofi -show drun
-bind = $mainMod SHIFT, R, exec, wofi --show drun
+bind = $mainMod, R, exec, rofi -show drun || wofi --show drun
 bind = $mainMod, P, pseudo,
 bind = $mainMod, J, togglesplit,
 bind = $mainMod, F, fullscreen,
-bind = $mainMod, L, exec, hyprlock
 
 # Move focus with vim keys
 bind = $mainMod, h, movefocus, l
 bind = $mainMod, l, movefocus, r
 bind = $mainMod, k, movefocus, u
 bind = $mainMod, j, movefocus, d
-
-# Move focus with arrows
-bind = $mainMod, left, movefocus, l
-bind = $mainMod, right, movefocus, r
-bind = $mainMod, up, movefocus, u
-bind = $mainMod, down, movefocus, d
-
-# Move windows
-bind = $mainMod SHIFT, h, movewindow, l
-bind = $mainMod SHIFT, l, movewindow, r
-bind = $mainMod SHIFT, k, movewindow, u
-bind = $mainMod SHIFT, j, movewindow, d
-
-# Resize windows
-bind = $mainMod CTRL, h, resizeactive, -20 0
-bind = $mainMod CTRL, l, resizeactive, 20 0
-bind = $mainMod CTRL, k, resizeactive, 0 -20
-bind = $mainMod CTRL, j, resizeactive, 0 20
 
 # Switch workspaces
 bind = $mainMod, 1, workspace, 1
@@ -320,123 +308,60 @@ bind = $mainMod SHIFT, 0, movetoworkspace, 10
 bind = , XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
 bind = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bind = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-bind = , XF86MonBrightnessUp, exec, brightnessctl s 10%+
-bind = , XF86MonBrightnessDown, exec, brightnessctl s 10%-
-
-# Media keys
-bind = , XF86AudioPlay, exec, playerctl play-pause
-bind = , XF86AudioNext, exec, playerctl next
-bind = , XF86AudioPrev, exec, playerctl previous
 
 # Screenshots
 bind = , Print, exec, grim -g "$(slurp)" - | swappy -f -
 bind = $mainMod, Print, exec, grim - | swappy -f -
-bind = $mainMod SHIFT, S, exec, grim -g "$(slurp)" - | swappy -f -
-
-# Special workspace (scratchpad)
-bind = $mainMod, S, togglespecialworkspace, magic
-bind = $mainMod SHIFT, S, movetoworkspace, special:magic
 HYPR_EOF
 
-log "Enhanced Hyprland configuration created"
+log "Hyprland configuration created"
 
-# Create enhanced waybar config
+# Create basic waybar config
 section "Creating Waybar configuration..."
 mkdir -p ~/.config/waybar
 cat > ~/.config/waybar/config << 'WAYBAR_EOF'
 {
     "layer": "top",
     "position": "top",
-    "height": 35,
-    "spacing": 4,
-    "margin-top": 8,
-    "margin-left": 12,
-    "margin-right": 12,
-    "modules-left": ["hyprland/workspaces", "hyprland/window"],
+    "height": 30,
+    "modules-left": ["hyprland/workspaces"],
     "modules-center": ["clock"],
-    "modules-right": ["pulseaudio", "network", "cpu", "memory", "battery", "tray"],
+    "modules-right": ["pulseaudio", "network", "battery", "tray"],
     
     "hyprland/workspaces": {
         "disable-scroll": true,
         "all-outputs": true,
-        "format": "{icon}",
-        "format-icons": {
-            "1": "󰲠",
-            "2": "󰲢",
-            "3": "󰲤",
-            "4": "󰲦",
-            "5": "󰲨",
-            "6": "󰲪",
-            "7": "󰲬",
-            "8": "󰲮",
-            "9": "󰲰",
-            "10": "󰿬",
-            "urgent": "",
-            "focused": "",
-            "default": ""
+        "format": "{name}",
+        "persistent_workspaces": {
+            "1": [],
+            "2": [],
+            "3": [],
+            "4": [],
+            "5": []
         }
-    },
-    
-    "hyprland/window": {
-        "format": "{}",
-        "max-length": 50,
-        "separate-outputs": true
     },
     
     "clock": {
         "timezone": "America/Sao_Paulo",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
         "format": "{:%H:%M}",
         "format-alt": "{:%Y-%m-%d}"
     },
     
-    "cpu": {
-        "format": "{usage}% ",
-        "tooltip": false,
-        "interval": 2
-    },
-    
-    "memory": {
-        "format": "{}% "
-    },
-    
     "battery": {
-        "states": {
-            "warning": 30,
-            "critical": 15
-        },
         "format": "{capacity}% {icon}",
-        "format-charging": "{capacity}% ",
-        "format-plugged": "{capacity}% ",
-        "format-alt": "{time} {icon}",
         "format-icons": ["", "", "", "", ""]
     },
     
     "network": {
-        "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "{ipaddr}/{cidr} ",
-        "tooltip-format": "{ifname} via {gwaddr} ",
-        "format-linked": "{ifname} (No IP) ",
-        "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{ifname}: {ipaddr}/{cidr}"
+        "format-wifi": "{essid} ",
+        "format-ethernet": "Connected ",
+        "format-disconnected": "Disconnected"
     },
     
     "pulseaudio": {
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
-        "format-icons": {
-            "headphone": "",
-            "hands-free": "",
-            "headset": "",
-            "phone": "",
-            "portable": "",
-            "car": "",
-            "default": ["", "", ""]
-        },
+        "format": "{volume}% {icon}",
+        "format-muted": "Muted",
+        "format-icons": ["", "", ""],
         "on-click": "pavucontrol"
     },
     
@@ -446,108 +371,57 @@ cat > ~/.config/waybar/config << 'WAYBAR_EOF'
 }
 WAYBAR_EOF
 
-# Create waybar CSS for theming
+# Create simple waybar CSS
 cat > ~/.config/waybar/style.css << 'WAYBAR_CSS'
 * {
     font-family: JetBrainsMono Nerd Font;
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
 }
 
 window#waybar {
-    background-color: rgba(26, 27, 38, 0.85);
-    border-radius: 12px;
-    color: #c0caf5;
-    transition-property: background-color;
-    transition-duration: .5s;
-}
-
-button {
-    box-shadow: inset 0 -3px transparent;
-    border: none;
-    border-radius: 8px;
+    background-color: rgba(43, 48, 59, 0.8);
+    border-bottom: 3px solid rgba(100, 114, 125, 0.5);
+    color: #ffffff;
 }
 
 #workspaces button {
-    padding: 5px 8px;
+    padding: 0 5px;
     background-color: transparent;
-    color: #7aa2f7;
-}
-
-#workspaces button:hover {
-    background: rgba(116, 199, 236, 0.2);
+    color: #ffffff;
+    border-bottom: 3px solid transparent;
 }
 
 #workspaces button.active {
-    background-color: #7aa2f7;
-    color: #1a1b26;
-}
-
-#workspaces button.urgent {
-    background-color: #f7768e;
-    color: #1a1b26;
+    background-color: #64727D;
+    border-bottom: 3px solid #ffffff;
 }
 
 #clock,
 #battery,
-#cpu,
-#memory,
 #network,
 #pulseaudio,
-#tray,
-#window {
-    padding: 4px 8px;
-    margin: 0 4px;
-    background-color: rgba(122, 162, 247, 0.1);
-    border-radius: 8px;
-}
-
-#battery.charging, #battery.plugged {
-    color: #9ece6a;
-}
-
-#battery.critical:not(.charging) {
-    background-color: #f7768e;
-    color: #1a1b26;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
-@keyframes blink {
-    to {
-        background-color: #ffffff;
-        color: #000000;
-    }
+#tray {
+    padding: 0 10px;
+    color: #ffffff;
 }
 WAYBAR_CSS
 
 log "Waybar configuration created"
 
-# Configure terminals with custom keybindings
-section "Configuring terminal keybindings..."
-
-# Kitty config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
+# Configure terminals
+section "Configuring terminals..."
 mkdir -p ~/.config/kitty
 cat > ~/.config/kitty/kitty.conf << 'KITTY_EOF'
-# Copy/paste with Ctrl+C/V
-map ctrl+c copy_to_clipboard
-map ctrl+v paste_from_clipboard
-
-# Process interrupt with Ctrl+Shift+C
-map ctrl+shift+c send_text all \x03
-
-# Font settings
 font_family JetBrainsMono Nerd Font
 font_size 12.0
+background_opacity 0.95
 
-# Theme
-background_opacity 0.9
+# Copy/paste
+map ctrl+c copy_to_clipboard
+map ctrl+v paste_from_clipboard
+map ctrl+shift+c send_text all \x03
 KITTY_EOF
 
-# Alacritty config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
 mkdir -p ~/.config/alacritty
 cat > ~/.config/alacritty/alacritty.yml << 'ALACRITTY_EOF'
 font:
@@ -556,230 +430,93 @@ font:
   size: 12.0
 
 window:
-  opacity: 0.9
+  opacity: 0.95
 
 key_bindings:
-  # Copy/paste with Ctrl+C/V
   - { key: C, mods: Control, action: Copy }
   - { key: V, mods: Control, action: Paste }
-  
-  # Process interrupt with Ctrl+Shift+C
   - { key: C, mods: Control|Shift, chars: "\x03" }
 ALACRITTY_EOF
 
-# Wezterm config - Ctrl+C/V for copy/paste, Ctrl+Shift+C for interrupt
-mkdir -p ~/.config/wezterm
-cat > ~/.config/wezterm/wezterm.lua << 'WEZTERM_EOF'
-local wezterm = require 'wezterm'
-local config = {}
-
--- Font
-config.font = wezterm.font('JetBrainsMono Nerd Font')
-config.font_size = 12.0
-
--- Appearance
-config.window_background_opacity = 0.9
-
--- Key bindings
-config.keys = {
-  -- Copy/paste with Ctrl+C/V
-  { key = 'c', mods = 'CTRL', action = wezterm.action.CopyTo 'Clipboard' },
-  { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' },
-  
-  -- Process interrupt with Ctrl+Shift+C
-  { key = 'c', mods = 'CTRL|SHIFT', action = wezterm.action.SendKey { key = 'c', mods = 'CTRL' } },
-}
-
-return config
-WEZTERM_EOF
-
-log "Terminal configurations created with custom keybindings"
-
-# Set up shell environment
+# Set up shell
 section "Setting up shell environment..."
 if [[ ! -f ~/.zshrc ]]; then
     echo 'eval "$(starship init zsh)"' >> ~/.zshrc
     echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.zshrc
-    echo 'alias ll="ls -la"' >> ~/.zshrc
-    echo 'alias la="ls -A"' >> ~/.zshrc
-    echo 'alias l="ls -CF"' >> ~/.zshrc
 fi
 
-# Create rofi config
-section "Creating rofi configuration..."
+# Create simple rofi config
 mkdir -p ~/.config/rofi
 cat > ~/.config/rofi/config.rasi << 'ROFI_EOF'
 configuration {
-    modi: "drun,run,window";
-    width: 50;
-    lines: 15;
+    modi: "drun";
+    width: 30;
+    lines: 10;
     columns: 1;
     font: "JetBrainsMono Nerd Font 12";
     show-icons: true;
     terminal: "kitty";
-    drun-display-format: "{icon} {name}";
-    location: 0;
-    disable-history: false;
-    hide-scrollbar: true;
-    display-drun: "   Apps ";
-    display-run: "   Run ";
-    display-window: " 﩯  Window";
-    display-Network: " 󰤨  Network";
-    sidebar-mode: true;
 }
-
-@theme "~/.config/rofi/launcher.rasi"
 ROFI_EOF
 
-# Create rofi theme
-cat > ~/.config/rofi/launcher.rasi << 'ROFI_THEME'
-* {
-    background-color: rgba(26, 27, 38, 0.95);
-    border-color: #7aa2f7;
-    text-color: #c0caf5;
-    spacing: 0;
-    width: 512px;
-}
-
-inputbar {
-    border: 0 0 1px 0;
-    children: [prompt,entry];
-}
-
-prompt {
-    padding: 16px;
-    border: 0 1px 0 0;
-}
-
-textbox {
-    background-color: #1a1b26;
-    border: 0 0 1px 0;
-    border-color: #7aa2f7;
-    padding: 8px 16px;
-}
-
-entry {
-    padding: 16px;
-}
-
-listview {
-    cycle: false;
-    margin: 0 0 -1px 0;
-    scrollbar: false;
-}
-
-element {
-    border: 0 0 1px 0;
-    padding: 16px;
-}
-
-element selected {
-    background-color: #7aa2f7;
-    text-color: #1a1b26;
-}
-ROFI_THEME
-
-# Create dunst config
-section "Creating dunst notification configuration..."
+# Create simple dunst config
 mkdir -p ~/.config/dunst
 cat > ~/.config/dunst/dunstrc << 'DUNST_EOF'
 [global]
-    monitor = 0
-    follow = none
     width = 300
     height = 300
     origin = top-right
     offset = 10x50
-    scale = 0
-    notification_limit = 0
-    progress_bar = true
-    progress_bar_height = 10
-    progress_bar_frame_width = 1
-    progress_bar_min_width = 150
-    progress_bar_max_width = 300
-    indicate_hidden = yes
-    transparency = 0
-    notification_height = 0
-    separator_height = 2
-    padding = 8
-    horizontal_padding = 8
-    text_icon_padding = 0
-    frame_width = 3
-    frame_color = "#7aa2f7"
-    separator_color = frame
-    sort = yes
     font = JetBrainsMono Nerd Font 10
-    line_height = 0
-    markup = full
-    format = "<b>%s</b>\n%b"
-    alignment = left
-    vertical_alignment = center
-    show_age_threshold = 60
-    ellipsize = middle
-    ignore_newline = no
-    stack_duplicates = true
-    hide_duplicate_count = false
-    show_indicators = yes
-    icon_position = left
-    min_icon_size = 0
-    max_icon_size = 32
-    sticky_history = yes
-    history_length = 20
-    dmenu = /usr/bin/dmenu -p dunst:
-    browser = /usr/bin/xdg-open
-    always_run_script = true
-    title = Dunst
-    class = Dunst
-    corner_radius = 10
-    ignore_dbusclose = false
-    force_xwayland = false
-    force_xinerama = false
-    mouse_left_click = close_current
-    mouse_middle_click = do_action, close_current
-    mouse_right_click = close_all
-
-[experimental]
-    per_monitor_dpi = false
+    frame_width = 2
+    frame_color = "#aaaaaa"
 
 [urgency_low]
-    background = "#1a1b26"
-    foreground = "#c0caf5"
+    background = "#222222"
+    foreground = "#888888"
     timeout = 10
 
 [urgency_normal]
-    background = "#1a1b26"
-    foreground = "#c0caf5"
+    background = "#285577"
+    foreground = "#ffffff"
     timeout = 10
 
 [urgency_critical]
-    background = "#f7768e"
-    foreground = "#1a1b26"
-    frame_color = "#f7768e"
+    background = "#900000"
+    foreground = "#ffffff"
     timeout = 0
 DUNST_EOF
 
 # Disable the auto-start service after completion
 section "Disabling auto-start service..."
-sudo systemctl disable arch-post-install.service
+sudo systemctl disable arch-post-install.service || warn "Service already disabled"
 
-# Create completion indicator
+# Create start script for easy Hyprland launching
+cat > ~/start-hyprland.sh << 'START_EOF'
+#!/bin/bash
+export XDG_CURRENT_DESKTOP=Hyprland
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=Hyprland
+export WLR_NO_HARDWARE_CURSORS=1
+export WLR_RENDERER_ALLOW_SOFTWARE=1
+
+exec Hyprland
+START_EOF
+
+chmod +x ~/start-hyprland.sh
+
 section "Setup completed successfully!"
 log "Hyprland setup completed for Dênio Barbosa Júnior!"
-log "Machine: penn | User: deniojr | Timezone: São Paulo (-3 UTC)"
-log "Keyboard: US International (for ç, à, è, ì, ò, ù characters)"
 log ""
 log "Installation summary:"
-log "✅ Hyprland with enhanced theming"
-log "✅ Multiple terminals: kitty, alacritty, wezterm"
-log "✅ Development tools: Go, Rust, Python, PostgreSQL, Docker"
-log "✅ Browsers: Firefox, Chromium, Brave, Chrome"
-log "✅ Applications: Discord, Notion, VS Code, Cursor, etc."
-log "✅ Gaming: Steam, Wine, Lutris, Heroic Games"
-log "✅ Media: VLC, MPV, Spotify, OBS"
+log "✅ Hyprland with VM-optimized settings"
+log "✅ Essential applications and tools"
+log "✅ Development environment"
+log "✅ Configured terminals and applications"
 log ""
-warn "Rebooting in 10 seconds to start Hyprland..."
-warn "After reboot, you can start Hyprland with: Hyprland"
+log "To start Hyprland, run: ./start-hyprland.sh"
+log "Or simply: Hyprland"
+warn "Rebooting in 15 seconds..."
 
-# Auto reboot after setup
-sleep 10
+sleep 15
 sudo reboot
