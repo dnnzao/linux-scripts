@@ -1,0 +1,17 @@
+* {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  font-family: "Noto Sans", sans-serif;
+}
+
+#pulseaudio {
+  color: #89b4fa;
+}
+
+#network {
+  color: #a6e3a1;
+}
+
+#battery {
+  color: #f38ba8;
+}

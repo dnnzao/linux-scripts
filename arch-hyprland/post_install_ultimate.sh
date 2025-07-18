@@ -118,7 +118,6 @@ safe_pacman wayland wayland-protocols
 safe_pacman xorg-xwayland
 safe_pacman mesa lib32-mesa
 safe_pacman vulkan-radeon lib32-vulkan-radeon
-safe_pacman vulkan-intel lib32-vulkan-intel
 safe_pacman vulkan-icd-loader lib32-vulkan-icd-loader
 safe_pacman libva-mesa-driver lib32-libva-mesa-driver
 safe_pacman mesa-vdpau lib32-mesa-vdpau
@@ -158,7 +157,8 @@ safe_pacman python python-pip
 safe_pacman postgresql postgresql-contrib
 safe_pacman docker docker-compose
 safe_pacman neovim vim
-safe_pacman code
+safe_pacman blueman
+
 
 # Install Hyprland ecosystem - with multiple fallbacks
 section "Installing Hyprland ecosystem..."
@@ -168,7 +168,6 @@ safe_pacman hyprland
 
 # Try to install git versions with paru/yay - each package separately
 if command -v paru &> /dev/null; then
-    safe_paru hyprland-git
     safe_paru hyprpaper
     safe_paru hyprlock
     safe_paru hypridle
@@ -181,7 +180,6 @@ if command -v paru &> /dev/null; then
     safe_paru eww-wayland
     safe_paru cava
 elif command -v yay &> /dev/null; then
-    safe_run "yay -S --needed --noconfirm hyprland-git"
     safe_run "yay -S --needed --noconfirm hyprpaper"
     safe_run "yay -S --needed --noconfirm hyprlock"
     safe_run "yay -S --needed --noconfirm hypridle"
@@ -220,7 +218,7 @@ safe_paru heroic-games-launcher-bin
 # Install GUI applications - each separately
 section "Installing GUI applications..."
 safe_paru discord
-safe_paru notion-app-enhanced
+safe_paru notion-app
 safe_paru visual-studio-code-bin
 safe_paru cursor-bin
 safe_paru brave-bin
@@ -228,6 +226,8 @@ safe_paru google-chrome
 safe_paru sublime-text-4
 safe_paru spotify
 safe_paru obs-studio
+safe_paru cliphist
+safe_paru swaynotificationcenter
 
 # Install GUI display manager with premium themes - with fallbacks
 section "Installing GUI display manager with themes..."
@@ -240,8 +240,6 @@ safe_paru sddm-theme-corners-git
 # Enable services - continue even if some fail
 section "Enabling services..."
 safe_run "sudo systemctl enable sddm"
-safe_run "sudo systemctl enable docker"
-safe_run "sudo systemctl enable postgresql"
 safe_run "sudo systemctl enable bluetooth"
 
 # Add user to groups - continue even if fails
@@ -541,7 +539,7 @@ windowrule = opacity 0.95 override,^(google-chrome)$
 windowrule = opacity 0.9 override,^(thunar)$
 windowrule = opacity 0.9 override,^(discord)$
 windowrule = opacity 0.95 override,^(spotify)$
-windowrule = opacity 0.95 override,^(notion-app-enhanced)$
+windowrule = opacity 0.95 override,^(notion-app)$
 
 windowrule = float,^(pavucontrol)$
 windowrule = float,^(lxappearance)$
@@ -578,7 +576,7 @@ windowrule = workspace 1,^(google-chrome)$
 
 # Communication window rules
 windowrule = workspace 4,^(discord)$
-windowrule = workspace 4,^(notion-app-enhanced)$
+windowrule = workspace 4,^(notion-app)$
 
 # Media window rules
 windowrule = workspace 3,^(spotify)$
@@ -641,7 +639,7 @@ bind = $mainMod, B, exec, firefox
 bind = $shiftMod, B, exec, brave
 bind = $mainMod, D, exec, discord
 bind = $mainMod, S, exec, spotify
-bind = $mainMod, N, exec, notion-app-enhanced
+bind = $mainMod, N, exec, notion-app
 bind = $ctrlMod, C, exec, code
 bind = $ctrlMod, S, exec, sublime_text
 bind = $mainMod, T, exec, telegram-desktop

@@ -1,0 +1,7 @@
+[settings]
+width=400
+height=300
+font=pango:Noto Sans 11
+background-color=#1e1e2e
+text-color=#cdd6f4
+selection-background-color=#89b4fa
