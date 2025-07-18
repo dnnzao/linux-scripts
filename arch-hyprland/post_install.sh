@@ -777,9 +777,9 @@ log "✅ Applications: Discord, Notion, VS Code, Cursor, etc."
 log "✅ Gaming: Steam, Wine, Lutris, Heroic Games"
 log "✅ Media: VLC, MPV, Spotify, OBS"
 log ""
-warn "Rebooting in 30 seconds to start Hyprland..."
+warn "Rebooting in 10 seconds to start Hyprland..."
 warn "After reboot, you can start Hyprland with: Hyprland"
 
 # Auto reboot after setup
-sleep 30
+sleep 10
 sudo reboot
