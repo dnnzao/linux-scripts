@@ -1,5 +1,5 @@
 {
-  description = "Denio's NixOS + Home Manager Flake with Hyprland and custom themes";
+  description = "Denio's NixOS + Home Manager Flake";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -7,13 +7,21 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, home-manager, flake-utils, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
     nixosConfigurations.denio = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
+        ({ config, pkgs, ... }: {
+          # Basic configuration
+          networking.hostName = "denio-nixos";
+          time.timeZone = "America/Sao_Paulo";
+          
+          # Bootloader
+          boot.loader.systemd-boot.enable = true;
+          boot.loader.efi.canTouchEfiVariables = true;
+        })
         ./hosts/denio.nix
         home-manager.nixosModules.home-manager
         {
@@ -22,7 +30,7 @@
             isNormalUser = true;
             home = "/home/denio";
             extraGroups = [ "wheel" "docker" "audio" "video" "bluetooth" ];
-            shell = nixpkgs.legacyPackages.x86_64-linux.zsh;
+            shell = pkgs.zsh;
           };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
