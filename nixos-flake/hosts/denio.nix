@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -13,6 +13,28 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelModules = [ "hid_playstation" ];  # PS5 Controller support
+
+  # VM-specific optimizations
+  boot.kernelParams = [ "quiet" "splash" ];
+  boot.plymouth.enable = true;
+
+  # Enable Hyprland
+  programs.hyprland = {
+    enable = true;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+  };
+
+  # Enable X11 and Wayland
+  services.xserver = {
+    enable = true;
+    displayManager.gdm = {
+      enable = true;
+      wayland = true;
+    };
+  };
+
+  # Enable networking
+  networking.networkmanager.enable = true;
 
   # Bluetooth
   hardware.bluetooth = {
@@ -84,6 +106,9 @@
     shell = pkgs.zsh;
   };
 
+  # Enable ZSH system-wide
+  programs.zsh.enable = true;
+
   # System Packages
   environment.systemPackages = with pkgs; [
     # Bluetooth
@@ -111,10 +136,38 @@
     discord
     steam
     heroic
+
+    # VM Guest additions and tools
+    spice-vdagent
+    
+    # Essential tools
+    git
+    wget
+    curl
+    nano
+    vim
   ];
 
   # Docker
   virtualisation.docker.enable = true;
+
+  # Enable OpenGL for VM graphics
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+  };
+
+  # Enable fonts
+  fonts.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk
+    noto-fonts-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
+  ];
 
   system.stateVersion = "23.05";
 }

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   # Dev Tools
@@ -11,6 +11,9 @@
     shellAliases = {
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-flake#denio";
       hm-switch = "home-manager switch --flake ~/nixos-flake#denio";
+      # Add some useful VM debugging aliases
+      vm-info = "systemd-detect-virt";
+      check-graphics = "glxinfo | grep 'OpenGL version'";
     };
   };
 
@@ -30,6 +33,9 @@
       confirm_os_window_close = 0;
       enable_audio_bell = false;
       term = "xterm-256color";
+      # VM-friendly settings
+      sync_to_monitor = false;
+      wayland_titlebar_color = "system";
     };
     keybindings = {
       "ctrl+shift+c" = "send_text all \\x03";  # Ctrl+Shift+C to cancel
@@ -51,6 +57,9 @@
     p7zip
     unzip
     pavucontrol
+    
+    # VM Tools
+    mesa-demos  # For glxinfo
     
     # Apps
     brave
@@ -87,6 +96,9 @@
   home.sessionVariables = {
     TERMINAL = "kitty";
     EDITOR = "subl";
+    # Help with Wayland in VMs
+    WAYLAND_DISPLAY = "wayland-1";
+    XDG_SESSION_TYPE = "wayland";
   };
 
   home.stateVersion = "23.05";

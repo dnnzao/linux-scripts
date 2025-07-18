@@ -10,7 +10,7 @@
     hyprland.url = "github:hyprwm/Hyprland";
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, hyprland, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, hyprland, ... }: {
     nixosConfigurations.denio = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
@@ -26,6 +26,16 @@
           };
         }
         hyprland.nixosModules.default
+        {
+          # Enable experimental features for flakes
+          nix.settings.experimental-features = [ "nix-command" "flakes" ];
+          
+          # Allow unfree packages
+          nixpkgs.config.allowUnfree = true;
+          
+          # Enable networking
+          networking.networkmanager.enable = true;
+        }
       ];
     };
   };
