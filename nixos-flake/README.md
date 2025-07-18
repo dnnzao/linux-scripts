@@ -5,8 +5,8 @@
 1. Clone this repo:
 
 ```bash
-git clone https://github.com/dnnzao/linux-scripts.git nixos-flake
-cd nixos-flake
+git clone https://github.com/dnnzao/linux-scripts.git linux-scripts
+cd linux-scripts
 ```
 
 2. Switch to the NixOS configuration:
