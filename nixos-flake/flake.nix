@@ -24,7 +24,7 @@
         })
         ./hosts/denio.nix
         home-manager.nixosModules.home-manager
-        {
+        ({ config, pkgs, ... }: {
           home-manager.users.denio = import ./home.nix;
           users.users.denio = {
             isNormalUser = true;
@@ -34,7 +34,7 @@
           };
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-        }
+        })
       ];
     };
   };
