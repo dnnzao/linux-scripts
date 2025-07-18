@@ -5,18 +5,56 @@
 # Description: Installs Hyprland with full visual effects and GUI login
 #===============================================================================
 
+# NEVER exit on errors - continue regardless of failures
+set +e
+
 # Colors and logging
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 log() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1"; }  # No longer exits
 section() { echo -e "\n${PURPLE}[SECTION]${NC} $1\n"; }
+success() { echo -e "${CYAN}[SUCCESS]${NC} $1"; }
+
+# Function to install packages safely - never fails
+safe_pacman() {
+    local packages="$*"
+    log "Attempting to install: $packages"
+    if sudo pacman -S --needed --noconfirm $packages; then
+        success "✅ Successfully installed: $packages"
+    else
+        warn "❌ Failed to install some packages in: $packages (continuing anyway)"
+    fi
+}
+
+# Function to install AUR packages safely - never fails
+safe_paru() {
+    local packages="$*"
+    log "Attempting to install from AUR: $packages"
+    if paru -S --needed --noconfirm --skipreview $packages; then
+        success "✅ Successfully installed from AUR: $packages"
+    else
+        warn "❌ Failed to install some AUR packages in: $packages (continuing anyway)"
+    fi
+}
+
+# Function to run commands safely - never fails
+safe_run() {
+    local cmd="$*"
+    log "Running: $cmd"
+    if eval "$cmd"; then
+        success "✅ Command succeeded: $cmd"
+    else
+        warn "❌ Command failed: $cmd (continuing anyway)"
+    fi
+}
 
 # Create log file
 exec > >(tee -a ~/post_install.log)
@@ -24,6 +62,8 @@ exec 2>&1
 
 section "Starting Optimized Hyprland setup for Dênio Barbosa Júnior..."
 log "Timestamp: $(date)"
+log "🛡️  BULLETPROOF MODE: Script will NEVER stop regardless of failures"
+log "🎨 FULL FEATURES MODE: Maximum visual effects and configurations"
 
 # Wait for network
 log "Waiting for network connection..."
