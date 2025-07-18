@@ -22,11 +22,28 @@
   };
 
   services = {
+    # Greetd (login manager)
     greetd.enable = true;
     greetd.settings.default_session.command = "${pkgs.greetd.tuigreet}/bin/tuigreet --cmd Hyprland";
     
-    pipewire.enable = true;
-    pipewire.pulse.enable = true;
+    # PipeWire (audio)
+    pipewire = {
+      enable = true;
+      pulse.enable = true;
+      alsa.enable = true;
+      media-session.config.bluez-monitor.rules = [
+        {
+          matches = [ { "device.name" = "~bluez_card.*"; } ];
+          actions = {
+            "update-props" = {
+              "bluez5.auto-connect" = [ "hfp_hf" "hsp_hs" "a2dp_sink" ];
+            };
+          };
+        }
+      ];
+    };
+
+    # Docker
     docker.enable = true;
   };
 
