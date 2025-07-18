@@ -5,7 +5,7 @@
 1. Clone this repo:
 
 ```bash
-git clone <your-repo-url> nixos-flake
+git clone https://github.com/dnnzao/linux-scripts/tree/main/nixos-flake.git nixos-flake
 cd nixos-flake
 ```
 
