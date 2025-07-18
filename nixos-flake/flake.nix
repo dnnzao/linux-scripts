@@ -3,55 +3,31 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { 
-    self,
-    nixpkgs,
-    home-manager,
-    flake-utils,
-    ...
-  }:
-
-  flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
-
-      home-manager-lib = home-manager.lib;
-    in {
-      nixosConfigurations = {
-        denio = pkgs.lib.nixosSystem {
-          system = system;
-          modules = [
-            ./hosts/denio.nix
-            home-manager-lib.nixosModules.home-manager
-            {
-              users.users.denio = {
-                isNormalUser = true;
-                home = "/home/denio";
-                extraGroups = [ "wheel" "docker" ];
-                shell = pkgs.zsh;
-              };
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-            }
-          ];
-        };
-      };
-
-      homeConfigurations = {
-        denio = home-manager-lib.homeManagerConfiguration {
-          system = system;
-          pkgs = pkgs;
-          modules = [ ./home.nix ];
-          username = "denio";
-          homeDirectory = "/home/denio";
-        };
-      };
-    }
-  );
+  outputs = { self, nixpkgs, home-manager, flake-utils, ... }@inputs: {
+    nixosConfigurations.denio = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./hosts/denio.nix
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.users.denio = import ./home.nix;
+          users.users.denio = {
+            isNormalUser = true;
+            home = "/home/denio";
+            extraGroups = [ "wheel" "docker" "audio" "video" "bluetooth" ];
+            shell = nixpkgs.legacyPackages.x86_64-linux.zsh;
+          };
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+        }
+      ];
+    };
+  };
 }
