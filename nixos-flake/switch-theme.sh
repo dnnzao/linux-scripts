@@ -1,38 +1,42 @@
 #!/usr/bin/env bash
 
 THEMES_DIR="$HOME/.config/themes"
-KITTY_CONFIG_DIR="$HOME/.config/kitty"
-WAYBAR_CONFIG_DIR="$HOME/.config/waybar"
-WOFI_CONFIG_DIR="$HOME/.config/wofi"
-HYPRLAND_CONFIG_DIR="$HOME/.config/hypr"
+CONFIG_DIR="$HOME/.config"
 
 function apply_theme() {
   local theme=$1
-  echo "Applying theme: $theme"
+  
+  # Verify theme exists
+  if [[ ! -d "$THEMES_DIR/$theme" ]]; then
+    notify-send "Theme Error" "Theme $theme not found!"
+    exit 1
+  fi
 
-  cp $THEMES_DIR/$theme/kitty.conf $KITTY_CONFIG_DIR/kitty.conf
-  cp $THEMES_DIR/$theme/waybar/* $WAYBAR_CONFIG_DIR/
-  cp $THEMES_DIR/$theme/wofi/* $WOFI_CONFIG_DIR/
-  cp $THEMES_DIR/$theme/hyprland.conf $HYPRLAND_CONFIG_DIR/hyprland.conf
+  # Kitty
+  mkdir -p "$CONFIG_DIR/kitty"
+  cp -v "$THEMES_DIR/$theme/kitty.conf" "$CONFIG_DIR/kitty/"
 
-  # Reload kitty
+  # Waybar
+  if [[ -d "$THEMES_DIR/$theme/waybar" ]]; then
+    mkdir -p "$CONFIG_DIR/waybar"
+    cp -v "$THEMES_DIR/$theme/waybar/"* "$CONFIG_DIR/waybar/"
+  fi
+
+  # Hyprland
+  if [[ -f "$THEMES_DIR/$theme/hyprland.conf" ]]; then
+    mkdir -p "$CONFIG_DIR/hypr"
+    cp -v "$THEMES_DIR/$theme/hyprland.conf" "$CONFIG_DIR/hypr/hyprland.conf"
+  fi
+
+  # Reload systems
   pkill -USR1 kitty
-
-  # Reload waybar
-  pkill waybar && waybar &
-
-  # Reload hyprland
+  pkill waybar && waybar >/dev/null 2>&1 &
   hyprctl reload
 
-  echo "Theme $theme applied!"
+  notify-send "Theme Changed" "Applied $theme theme successfully"
 }
 
-THEME=$(wofi --show dmenu --prompt "Select theme:" -d <<< "catppuccin
-tokyonight
-nord")
+# Theme selection
+THEME=$(ls "$THEMES_DIR" | rofi -dmenu -p "Select theme")
 
-if [[ -n "$THEME" ]]; then
-  apply_theme "$THEME"
-else
-  echo "No theme selected, aborting."
-fi
+[[ -n "$THEME" ]] && apply_theme "$THEME" || exit 0

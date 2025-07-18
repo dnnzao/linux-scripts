@@ -1,35 +1,32 @@
 { config, pkgs, ... }:
 
 {
-  programs.zsh.enable = true;
-  programs.zsh.ohMyZsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    ohMyZsh.enable = true;
+  };
+
   programs.starship.enable = true;
 
   programs.kitty = {
     enable = true;
-    extraConfig = ''
-      include ${toString ./themes/catppuccin/kitty.conf}
-    '';
+    theme = "Catppuccin-Mocha"; # Direct theme reference
+    settings = {
+      confirm_os_window_close = 0;
+      enable_audio_bell = false;
+    };
   };
+
+  home.packages = with pkgs; [
+    # Your existing packages
+    # Add theme utilities
+    libnotify
+    swaynotificationcenter
+  ];
 
   home.sessionVariables = {
-    PATH = "${pkgs.go}/bin:${pkgs.python3}/bin:${pkgs.rustup}/bin:${config.home.homeDirectory}/.cargo/bin:${config.home.homeDirectory}/.local/bin:${pkgs.kitty}/bin";
+    PATH = "$HOME/.local/bin:$PATH";
   };
 
-  home.packages = [
-    pkgs.go
-    pkgs.python3
-    pkgs.rustup
-    pkgs.btop
-    pkgs.htop
-    pkgs.p7zip
-    pkgs.unzip
-    pkgs.discord
-    pkgs.brave
-    pkgs.notion
-    pkgs.vscode
-    pkgs.steam
-    pkgs.heroic
-    pkgs.wine
-  ];
+  home.stateVersion = "23.05";
 }
