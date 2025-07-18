@@ -4,16 +4,21 @@
   # Dev Tools
   programs.zsh = {
     enable = true;
-    ohMyZsh = {
+    oh-my-zsh = {
       enable = true;
       plugins = ["git" "docker" "rust"];
     };
     shellAliases = {
       rebuild = "sudo nixos-rebuild switch --flake ~/nixos-flake#denio";
       hm-switch = "home-manager switch --flake ~/nixos-flake#denio";
-      # Add some useful VM debugging aliases
+      # VM testing and debugging aliases
       vm-info = "systemd-detect-virt";
       check-graphics = "glxinfo | grep 'OpenGL version'";
+      system-info = "neofetch";
+      hardware-info = "lshw -short";
+      test-wayland = "echo $WAYLAND_DISPLAY && echo $XDG_SESSION_TYPE";
+      test-audio = "pactl info";
+      test-themes = "ls ~/.config/themes/";
     };
   };
 

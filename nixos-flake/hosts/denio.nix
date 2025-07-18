@@ -53,22 +53,19 @@
     alsa.enable = true;
     pulse.enable = true;
     jack.enable = true;
-
-    media-session.config.bluez-monitor.rules = [
-      {
-        matches = [ 
-          { "device.name" = "~bluez_card.*"; }
-          { "node.name" = "~bluez_input.*"; }
-        ];
-        actions = {
-          "update-props" = {
-            "bluez5.auto-connect" = [ "hfp_hf" "hsp_hs" "a2dp_sink" "input" ];
-            "bluez5.msbc-support" = true;  # Better headset quality
-            "bluez5.sbc-xq-support" = true;  # Better audio quality
-          };
-        };
-      }
-    ];
+    
+    # Use wireplumber instead of deprecated media-session
+    wireplumber.enable = true;
+    
+    # Bluetooth configuration for wireplumber
+    extraConfig.pipewire."92-low-latency" = {
+      context.properties = {
+        default.clock.rate = 48000;
+        default.clock.quantum = 32;
+        default.clock.min-quantum = 32;
+        default.clock.max-quantum = 32;
+      };
+    };
   };
 
   # Steam Controller Support (Complete)
@@ -146,16 +143,22 @@
     curl
     nano
     vim
+    
+    # VM Testing Tools
+    neofetch
+    lshw
+    dmidecode
+    lscpu
+    inxi
   ];
 
   # Docker
   virtualisation.docker.enable = true;
 
-  # Enable OpenGL for VM graphics
-  hardware.opengl = {
+  # Enable graphics for VM
+  hardware.graphics = {
     enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
 
   # Enable fonts

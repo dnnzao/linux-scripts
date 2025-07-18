@@ -8,36 +8,57 @@
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
-  boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "virtio_pci" "virtio_scsi" "sd_mod" "sr_mod" ];
+  boot.initrd.availableKernelModules = [ 
+    "ata_piix" "uhci_hcd" "virtio_pci" "virtio_scsi" "sd_mod" "sr_mod"
+    # Additional modules for different VM types
+    "ahci" "xhci_pci" "virtio_blk" "vmw_pvscsi"
+  ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  # VM-appropriate filesystem configuration
+  # Flexible filesystem configuration for VMs
+  # This will work with most VM setups
   fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
+    device = "/dev/sda1";  # More common in VMs than by-label
     fsType = "ext4";
+    options = [ "defaults" ];
   };
 
+  # Boot partition - adjust based on your VM setup
   fileSystems."/boot" = {
-    device = "/dev/disk/by-label/boot";
+    device = "/dev/sda2";  # Adjust if needed
     fsType = "vfat";
+    options = [ "defaults" ];
   };
 
+  # Optional swap - comment out if you don't have swap
   swapDevices = [
-    { device = "/dev/disk/by-label/swap"; }
+    # { device = "/dev/sda3"; }  # Uncomment and adjust if you have swap
   ];
 
-  # Enable all firmware
+  # Enable all firmware for better hardware compatibility
   hardware.enableAllFirmware = true;
 
   # VM-specific optimizations
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
 
-  # Network configuration for VMs
+  # Flexible network configuration
   networking.useDHCP = lib.mkDefault true;
-  networking.interfaces.enp1s0.useDHCP = lib.mkDefault true;
+  # Remove specific interface - let NixOS auto-detect
+  # networking.interfaces.enp1s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  # VM performance optimizations
+  boot.kernelParams = [ 
+    "quiet" 
+    "splash" 
+    "mitigations=off"  # Better VM performance (disable for production)
+  ];
+
+  # Disable unnecessary services for VM testing
+  services.thermald.enable = lib.mkDefault false;
+  powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
 } 
